@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WatchTogether — مشاهدة جماعية</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0d14;--panel:#151925;--panel2:#1d2332;--line:#2a3245;--text:#f5f7fb;--muted:#9aa5bb;--accent:#7c5cff;--green:#39d98a}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% -20%,#29204e 0,transparent 45%),var(--bg);color:var(--text);font-family:Tahoma,Arial,sans-serif;min-height:100vh}
+button,input{font:inherit}button{border:0;border-radius:12px;padding:12px 16px;background:var(--accent);color:white;font-weight:700;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}input{background:#0e1220;border:1px solid var(--line);color:var(--text);border-radius:12px;padding:13px;width:100%;outline:none}input:focus{border-color:var(--accent)}
+.top{max-width:1180px;margin:auto;padding:22px 20px;display:flex;align-items:center;justify-content:space-between}.brand{font-size:22px;font-weight:900;letter-spacing:-.5px}.brand span{color:#a996ff}.pill{border:1px solid var(--line);padding:8px 12px;border-radius:99px;color:var(--muted);font-size:12px}
+main{max-width:1180px;margin:30px auto;padding:0 20px}.hero{text-align:center;margin:54px auto 34px;max-width:650px}.hero h1{font-size:clamp(30px,5vw,48px);margin:0 0 12px}.hero p{color:var(--muted);line-height:1.8;margin:0}
+.panel{background:linear-gradient(145deg,#191e2c,#121622);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 18px 60px #0004}.start{max-width:480px;margin:0 auto}.field{display:grid;gap:8px;margin:14px 0}.field label{font-size:13px;color:var(--muted)}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.secondary{background:var(--panel2);border:1px solid var(--line)}.hint{color:var(--muted);font-size:12px;line-height:1.7;margin-top:14px}
+.hidden{display:none!important}.room-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}.room-code{font-size:13px;color:var(--muted)}.room-code b{color:white;letter-spacing:2px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px}.playerbox{background:#05070c;border-radius:16px;overflow:hidden;aspect-ratio:16/9;display:grid;place-items:center}.playerbox iframe{width:100%;height:100%;border:0}.placeholder{text-align:center;color:var(--muted);padding:20px}.placeholder strong{display:block;color:white;font-size:18px;margin:10px}.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px}.controls button{padding:10px 13px}.controls input{flex:1;min-width:180px}.small{font-size:12px;color:var(--muted)}.chat{display:flex;flex-direction:column;min-height:420px;max-height:560px}.chat h3{margin:0 0 14px}.messages{overflow:auto;flex:1;display:flex;flex-direction:column;gap:10px;padding:4px 0 12px}.msg{background:#0e1320;border:1px solid #222a3b;border-radius:12px;padding:9px 11px;overflow-wrap:anywhere}.msg b{font-size:12px;color:#b6a8ff}.msg p{margin:5px 0 0;font-size:14px;line-height:1.5}.sys{text-align:center;color:var(--muted);font-size:11px}.send{display:flex;gap:8px}.send input{min-width:0}.members{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.member{font-size:11px;border:1px solid var(--line);padding:6px 9px;border-radius:99px;color:var(--muted)}.member.host{border-color:#6e59cf;color:#c5baff}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#252d40;border:1px solid var(--line);padding:12px 18px;border-radius:12px;display:none;z-index:9;max-width:90vw}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.chat{min-height:320px;max-height:420px}.hero{margin-top:32px}.top{padding:16px}}
+@media(max-width:460px){main{padding:0 12px}.panel{padding:15px}.actions{grid-template-columns:1fr}.room-head{align-items:flex-start}}
+</style></head>
+<body>
+<header class="top"><div class="brand">Watch<span>Together</span> ✦</div><div class="pill">مشاهدة جماعية متزامنة</div></header>
+<main>
+<section id="home">
+ <div class="hero"><h1>الفيديو أحلى <span style="color:#a996ff">مع بعض</span></h1><p>اعمل غرفة، ابعت الدعوة لأصحابك، واتفرجوا على نفس فيديو يوتيوب واتكلموا في الشات.</p></div>
+ <div class="panel start">
+  <div class="field"><label>اسمك</label><input id="name" maxlength="24" placeholder="اكتب اسمك"></div>
+  <div class="actions"><button id="create">＋ إنشاء غرفة</button><button class="secondary" id="showJoin">انضم لغرفة</button></div>
+  <div id="joinFields" class="hidden">
+   <div class="field"><label>كود الغرفة أو رابط الدعوة</label><input id="roomCode" placeholder="مثال: A1B2C3"></div>
+   <button id="join" style="width:100%">دخول الغرفة</button>
+  </div>
+  <p class="hint">المضيف هو اللي بيضيف فيديو يوتيوب. بعد كده كل الموجودين يقدروا يشغلوا ويوقفوا ويقدموا الفيديو.</p>
+ </div>
+</section>
+<section id="room" class="hidden">
+ <div class="room-head"><div><div style="font-weight:800;font-size:20px">غرفة المشاهدة</div><div class="room-code">كود الغرفة: <b id="codeLabel"></b> · <span id="count">1</span> أعضاء</div></div><div style="display:flex;gap:8px"><button class="secondary" id="copyInvite">نسخ رابط الدعوة</button><button class="secondary" id="leave">خروج</button></div></div>
+ <div class="layout">
+  <div>
+   <div class="panel">
+    <div class="playerbox" id="playerbox"><div class="placeholder"><div style="font-size:38px">▶</div><strong>مستنيين المضيف يضيف فيديو</strong><span>رابط يوتيوب هيظهر هنا لكل الموجودين</span></div></div>
+    <div id="hostTools" class="controls hidden"><input id="videoUrl" placeholder="الصق رابط فيديو YouTube هنا"><button id="setVideo">إضافة الفيديو</button></div>
+    <div class="controls"><button id="play">▶ تشغيل</button><button id="pause" class="secondary">Ⅱ إيقاف</button><button id="back" class="secondary">↶ 10 ثواني</button><button id="forward" class="secondary">10 ثواني ↷</button><span class="small" id="syncStatus">في انتظار الفيديو</span></div>
+    <div class="members" id="members"></div>
+   </div>
+  </div>
+  <aside class="panel chat"><h3>💬 الشات</h3><div class="messages" id="messages"></div><form class="send" id="chatForm"><input id="chatInput" maxlength="500" placeholder="اكتب رسالة..."><button>إرسال</button></form></aside>
+ </div>
+</section>
+</main><div class="toast" id="toast"></div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+const socket=io();
+let state=null, player=null, playerReady=false, suppress=false, pendingSeek=null;
+const $=id=>document.getElementById(id);
+function toast(s){const t=$("toast");t.textContent=s;t.style.display="block";clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.style.display="none",2800)}
+function myName(){return $("name").value.trim()||"Guest"}
+function showRoom(s){state=s;$("home").classList.add("hidden");$("room").classList.remove("hidden");$("codeLabel").textContent=s.code;renderState(s)}
+function renderState(s){
+ state=s;$("count").textContent=s.members.length;
+ $("hostTools").classList.toggle("hidden",s.hostId!==socket.id);
+ $("members").innerHTML=s.members.map(m=>`<span class="member ${m.id===s.hostId?'host':''}">${escapeHtml(m.name)} ${m.id===s.hostId?'👑':''}</span>`).join("");
+ if(s.videoId && (!player || player.getVideoData?.().video_id!==s.videoId)){
+   $("playerbox").innerHTML='<div id="ytplayer" style="width:100%;height:100%"></div>';
+   playerReady=false;
+   player=new YT.Player("ytplayer",{videoId:s.videoId,width:"100%",height:"100%",playerVars:{playsinline:1,rel:0},events:{onReady:()=>{playerReady=true;applyState(s)},onStateChange:e=>{if(suppress)return;if(e.data===1)sendPlayback("play");if(e.data===2)sendPlayback("pause")}}});
+ } else if(playerReady) applyState(s);
+}
+function applyState(s){
+ if(!playerReady||!s.videoId)return;
+ const target=s.position+(s.playing?(Date.now()-s.updatedAt)/1000:0);
+ const actual=player.getCurrentTime?.()||0;
+ if(Math.abs(actual-target)>1.8){suppress=true;player.seekTo(Math.max(0,target),true);setTimeout(()=>suppress=false,500)}
+ if(s.playing && player.getPlayerState()!==1){suppress=true;player.playVideo();setTimeout(()=>suppress=false,500)}
+ if(!s.playing && player.getPlayerState()===1){suppress=true;player.pauseVideo();setTimeout(()=>suppress=false,500)}
+ $("syncStatus").textContent="المزامنة شغالة";
+}
+function sendPlayback(action){if(!playerReady)return;socket.emit("playback",{action,position:player.getCurrentTime()});}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function addMsg(m){const d=document.createElement("div");d.className="msg";d.innerHTML=`<b>${escapeHtml(m.name)}</b><p>${escapeHtml(m.text)}</p>`;$("messages").appendChild(d);$("messages").scrollTop=$("messages").scrollHeight}
+$("create").onclick=()=>socket.emit("create-room",{name:myName()},r=>{if(r.ok)showRoom(r.state);else toast("تعذر إنشاء الغرفة")});
+$("showJoin").onclick=()=>$("joinFields").classList.toggle("hidden");
+$("join").onclick=()=>{let c=$("roomCode").value.trim().toUpperCase();try{if(c.includes("/"))c=new URL(c).searchParams.get("room")||c.split("/").filter(Boolean).pop()}catch(_){}socket.emit("join-room",{code:c,name:myName()},r=>{if(r.ok)showRoom(r.state);else toast(r.error)})};
+$("setVideo").onclick=()=>socket.emit("set-video",{videoUrl:$("videoUrl").value.trim()},r=>{if(!r.ok)toast(r.error);else{$("videoUrl").value="";toast("تمت إضافة الفيديو") }});
+$("play").onclick=()=>sendPlayback("play");$("pause").onclick=()=>sendPlayback("pause");
+$("back").onclick=()=>{if(playerReady)socket.emit("playback",{action:"seek",position:Math.max(0,player.getCurrentTime()-10)})};
+$("forward").onclick=()=>{if(playerReady)socket.emit("playback",{action:"seek",position:player.getCurrentTime()+10})};
+$("copyInvite").onclick=async()=>{const u=new URL(location.href);u.searchParams.set("room",state.code);try{await navigator.clipboard.writeText(u.href);toast("تم نسخ رابط الدعوة")}catch(_){toast(u.href)}};
+$("leave").onclick=()=>{location.href=location.pathname};
+$("chatForm").onsubmit=e=>{e.preventDefault();const message=$("chatInput").value.trim();if(message){socket.emit("chat-message",{message});$("chatInput").value=""}};
+socket.on("room-state",renderState);
+socket.on("playback-update",u=>{if(!state)return;state.playing=u.playing;state.position=u.position;state.updatedAt=u.updatedAt;if(playerReady)applyState(state)});
+socket.on("new-message",addMsg);
+socket.on("system-message",s=>{const d=document.createElement("div");d.className="sys";d.textContent=s;$("messages").appendChild(d)});
+socket.on("connect",()=>{const c=new URLSearchParams(location.search).get("room");if(c){$("joinFields").classList.remove("hidden");$("roomCode").value=c;setTimeout(()=>$("join").click(),250)}});
+window.onYouTubeIframeAPIReady=()=>{};
+setInterval(()=>{if(state?.playing&&playerReady&&!suppress){const target=state.position+(Date.now()-state.updatedAt)/1000;const actual=player.getCurrentTime?.()||0;if(Math.abs(actual-target)>2)applyState(state)}},3000);
+</script></body></html>
